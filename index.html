@@ -1,235 +1,256 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart School Bell Panel</title>
-
-<style>
-body{
-font-family:Segoe UI;
-background:#eef2f7;
-margin:0;
-}
-
-header{
-background:#1e3d59;
-color:white;
-padding:15px;
-text-align:center;
-}
-
-.container{
-width:95%;
-margin:auto;
-margin-top:20px;
-}
-
-.card{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 4px 12px rgba(0,0,0,0.1);
-margin-bottom:20px;
-}
-
-input,select{
-padding:8px;
-margin:5px;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-button{
-padding:8px 15px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-margin:3px;
-}
-
-.addBtn{ background:#27ae60; color:white; }
-.deleteBtn{ background:#e74c3c; color:white; }
-.editBtn{ background:#f39c12; color:white; }
-.exportBtn{ background:#2980b9; color:white; }
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-}
-
-th,td{
-border:1px solid #ccc;
-padding:8px;
-text-align:center;
-}
-
-.hidden{ display:none; }
-
-@media(max-width:600px){
-input,select{ width:100%; }
-}
-</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart School Bell Panel</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("https://images.unsplash.com/photo-1523050853061-8c44f4323f50?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80");
+            background-size: cover;
+            background-attachment: fixed;
+            color: white;
+        }
+        header {
+            background: rgba(0,0,0,0.85);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #27ae60;
+        }
+        .logoSection { display: flex; align-items: center; }
+        .logoSection img { height: 60px; margin-right: 15px; border-radius: 50%; }
+        .schoolName { font-size: 22px; font-weight: bold; letter-spacing: 1px; }
+        .statusClockBox { display: flex; flex-direction: column; align-items: flex-end; }
+        #clock { font-size: 26px; font-weight: bold; color: #2ecc71; }
+        #date { font-size: 14px; color: #bdc3c7; }
+        #espStatus { margin-top: 5px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #7f8c8d; transition: 0.3s; }
+        .container { width: 95%; max-width: 1000px; margin: auto; margin-top: 20px; padding-bottom: 100px; }
+        .card { background: rgba(255,255,255,0.98); color: #2c3e50; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 25px; }
+        h3 { margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        input, select { padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd; width: 100%; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        button { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
+        .addBtn { background: #27ae60; color: white; flex: 2; }
+        .ringBtn { background: #e67e22; color: white; flex: 1; }
+        .clearBtn { background: #7f8c8d; color: white; font-size: 11px; margin-top: 10px; }
+        .deleteBtn { background: #e74c3c; color: white; padding: 5px 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
+        th { background: #f8f9fa; }
+        .hidden { display: none; }
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e3d59; color: white; padding: 10px; text-align: center; font-size: 13px; z-index: 100; }
+        @media(max-width:600px) { header { flex-direction: column; text-align: center; } .statusClockBox { align-items: center; margin-top: 10px; } }
+    </style>
 </head>
-
 <body>
 
 <header>
-<h2>Smart Automatic School Bell System</h2>
+    <div class="logoSection">
+        <img src="https://via.placeholder.com/60" alt="Logo">
+        <div class="schoolName">Sparktron Smart Bell</div>
+    </div>
+    <div class="statusClockBox">
+        <div id="clock">00:00:00</div>
+        <div id="date">Loading...</div>
+        <div id="espStatus">Connecting to ESP...</div>
+    </div>
 </header>
 
 <div class="container">
+    <div class="card" id="loginBox">
+        <h3>🔐 Admin Login</h3>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button class="addBtn" style="width:100%" onclick="login()">Login</button>
+    </div>
 
-<div class="card" id="loginBox">
-<h3>Admin Login</h3>
-<input type="text" id="username" placeholder="Username"><br>
-<input type="password" id="password" placeholder="Password"><br>
-<button onclick="login()">Login</button>
+    <div class="card hidden" id="dashboard">
+        <h3>📅 Add Schedule (24-Hour Format)</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label>Select Day:</label>
+                <select id="day">
+                    <option>Sunday</option>
+                    <option>Monday</option>
+                    <option>Tuesday</option>
+                    <option>Wednesday</option>
+                    <option>Thursday</option>
+                    <option>Friday</option>
+                    <option>Saturday</option>
+                </select>
+            </div>
+            <div>
+                <label>Hour (0-23):</label>
+                <input type="number" id="hour" min="0" max="23" placeholder="10">
+            </div>
+            <div>
+                <label>Minute (0-59):</label>
+                <input type="number" id="minute" min="0" max="59" placeholder="30">
+            </div>
+            <div>
+                <label>Duration (Seconds):</label>
+                <input type="number" id="duration" placeholder="5">
+            </div>
+        </div>
+
+        <div style="margin: 10px 0;">
+            <label><input type="checkbox" id="repeatNext"> Repeat Tomorrow</label> &nbsp;
+            <label><input type="checkbox" id="repeatWeek"> Full Week (Mon-Sun)</label>
+        </div>
+
+        <div class="btn-group">
+            <button class="addBtn" onclick="addSchedule()">➕ Upload Schedule</button>
+            <button class="ringBtn" onclick="remoteRing()">🔔 Manual Ring Now</button>
+        </div>
+        
+        <button class="clearBtn" onclick="deleteAll()">Clear All Schedules</button>
+
+        <h3 style="margin-top:30px;">📋 Weekly Timetable</h3>
+        <div style="overflow-x:auto;">
+            <table id="table">
+                <tr><th>Day</th><th>Time</th><th>Duration</th><th>Action</th></tr>
+            </table>
+        </div>
+    </div>
 </div>
 
-<div class="card hidden" id="dashboard">
+<footer>
+    Developed by Vishwajeet Jadhav | 📞 9322244959 | 📧 jadhavvishwajeet94@gmail.com
+</footer>
 
-<h3>Add Bell Schedule</h3>
-
-<select id="day">
-<option>Monday</option>
-<option>Tuesday</option>
-<option>Wednesday</option>
-<option>Thursday</option>
-<option>Friday</option>
-<option>Saturday</option>
-<option>Sunday</option>
-</select>
-
-<input type="number" id="hour" min="0" max="23" placeholder="Hour (0-23)">
-<input type="number" id="minute" min="0" max="59" placeholder="Minute (0-59)">
-<input type="number" id="duration" placeholder="Duration (sec)">
-
-<label>
-<input type="checkbox" id="repeatNext"> Repeat Next Day
-</label>
-
-<br>
-<button class="addBtn" onclick="addSchedule()">Add</button>
-<button class="exportBtn" onclick="exportJSON()">Export JSON</button>
-
-<h3>Weekly Time Table</h3>
-
-<table id="table">
-<tr>
-<th>Day</th>
-<th>Time</th>
-<th>Duration</th>
-<th>Action</th>
-</tr>
-</table>
-
-</div>
-</div>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <script>
+/* 🔥 FIREBASE CONFIGURATION */
+const firebaseConfig = {
+    apiKey: "AIzaSyCkl4p4SnS84EzLIyIjTk5euJH9lx9FVSI",
+    authDomain: "sparktrontechbell.firebaseapp.com",
+    databaseURL: "https://sparktrontechbell-default-rtdb.firebaseio.com",
+    projectId: "sparktrontechbell",
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
-let schedules=[];
-const days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+/* CLOCK SYSTEM */
+function updateClock(){
+    const now = new Date();
+    document.getElementById("clock").innerText = now.toLocaleTimeString('en-IN', { hour12: false });
+    document.getElementById("date").innerText = now.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+setInterval(updateClock, 1000);
+updateClock();
 
+/* LOGIN SYSTEM */
 function login(){
-if(username.value==="admin" && password.value==="12345"){
-loginBox.classList.add("hidden");
-dashboard.classList.remove("hidden");
-loadFromStorage();
-}
-else{
-alert("Wrong login");
-}
-}
-
-function addSchedule(){
-let day=daySelect();
-let hour=hour.value;
-let minute=minute.value;
-let duration=duration.value;
-let repeat=repeatNext.checked;
-
-if(hour===""||minute===""||duration===""){
-alert("Fill all fields");
-return;
+    if(document.getElementById("username").value === "srjadhav" && 
+       document.getElementById("password").value === "7588"){
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("dashboard").classList.remove("hidden");
+    } else {
+        alert("Incorrect Credentials!");
+    }
 }
 
-let entry={day:day,time:formatTime(hour,minute),duration:duration};
-schedules.push(entry);
+/* ESP32 STATUS TRACKER */
+database.ref("/SchoolBell/espStatus").on("value", (snapshot) => {
+    const lastSeen = snapshot.val();
+    const statusDiv = document.getElementById("espStatus");
+    if(!lastSeen) return;
 
-if(repeat){
-let index=days.indexOf(day);
-if(index<6){
-let nextEntry={day:days[index+1],time:formatTime(hour,minute),duration:duration};
-schedules.push(nextEntry);
-}
-}
-
-saveToStorage();
-renderTable();
-}
-
-function renderTable(){
-let table=document.getElementById("table");
-table.innerHTML="<tr><th>Day</th><th>Time</th><th>Duration</th><th>Action</th></tr>";
-
-schedules.forEach((item,index)=>{
-let row=table.insertRow(-1);
-row.insertCell(0).innerHTML=item.day;
-row.insertCell(1).innerHTML=item.time;
-row.insertCell(2).innerHTML=item.duration+" sec";
-row.insertCell(3).innerHTML=
-"<button class='editBtn' onclick='editRow("+index+")'>Edit</button>"+
-"<button class='deleteBtn' onclick='deleteRow("+index+")'>Delete</button>";
+    const diff = Date.now() - lastSeen;
+    if(diff < 20000){ // 20 Seconds timeout
+        statusDiv.style.background = "#27ae60";
+        statusDiv.innerText = "🟢 ESP32 ONLINE";
+    } else {
+        statusDiv.style.background = "#e74c3c";
+        statusDiv.innerText = "🔴 ESP32 OFFLINE";
+    }
 });
+
+/* MANUAL RING TRIGGER */
+function remoteRing() {
+    database.ref("/SchoolBell/manualTrigger").set(true);
+    alert("Manual Ring Signal Sent!");
 }
 
-function deleteRow(index){
-schedules.splice(index,1);
-saveToStorage();
-renderTable();
+/* LOAD & SORT SCHEDULE */
+const dayOrder = { "Sunday":0, "Monday":1, "Tuesday":2, "Wednesday":3, "Thursday":4, "Friday":5, "Saturday":6 };
+
+database.ref("/SchoolBell/schedule").on("value", (snapshot) => {
+    let table = document.getElementById("table");
+    table.innerHTML = "<tr><th>Day</th><th>Time (24H)</th><th>Duration</th><th>Action</th></tr>";
+    
+    let items = [];
+    snapshot.forEach((child) => {
+        let val = child.val();
+        val.key = child.key;
+        items.push(val);
+    });
+
+    items.sort((a,b) => {
+        if(dayOrder[a.day] !== dayOrder[b.day]) return dayOrder[a.day] - dayOrder[b.day];
+        if(a.hour !== b.hour) return a.hour - b.hour;
+        return a.minute - b.minute;
+    });
+
+    items.forEach((data) => {
+        let row = table.insertRow(-1);
+        row.insertCell(0).innerText = data.day;
+        row.insertCell(1).innerText = String(data.hour).padStart(2,'0') + ":" + String(data.minute).padStart(2,'0');
+        row.insertCell(2).innerText = data.duration + " sec";
+        row.insertCell(3).innerHTML = `<button class="deleteBtn" onclick="deleteSchedule('${data.key}')">Delete</button>`;
+    });
+});
+
+/* ADD SCHEDULE LOGIC */
+const daysArr = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function addSchedule() {
+    let day = document.getElementById("day").value;
+    let hour = parseInt(document.getElementById("hour").value);
+    let minute = parseInt(document.getElementById("minute").value);
+    let duration = parseInt(document.getElementById("duration").value);
+    let repeatNext = document.getElementById("repeatNext").checked;
+    let repeatWeek = document.getElementById("repeatWeek").checked;
+
+    if(isNaN(hour) || isNaN(minute) || isNaN(duration)) {
+        alert("Please fill all fields with numbers!");
+        return;
+    }
+
+    function pushData(d) {
+        database.ref("/SchoolBell/schedule").push({
+            day: d, hour: hour, minute: minute, duration: duration
+        });
+    }
+
+    if(repeatWeek) {
+        daysArr.forEach(d => pushData(d));
+    } else {
+        pushData(day);
+        if(repeatNext) {
+            let nextIndex = (daysArr.indexOf(day) + 1) % 7;
+            pushData(daysArr[nextIndex]);
+        }
+    }
+    alert("Schedule Uploaded Successfully ✅");
 }
 
-function editRow(index){
-let item=schedules[index];
-let newDuration=prompt("Edit Duration (sec)",item.duration);
-if(newDuration!=null){
-item.duration=newDuration;
-saveToStorage();
-renderTable();
-}
+function deleteSchedule(key) {
+    if(confirm("Delete this bell?")) database.ref("/SchoolBell/schedule/" + key).remove();
 }
 
-function formatTime(h,m){
-return h.toString().padStart(2,'0')+":"+m.toString().padStart(2,'0');
+function deleteAll() {
+    if(confirm("WARNING: This will delete ALL schedules. Proceed?")) {
+        database.ref("/SchoolBell/schedule").remove();
+    }
 }
-
-function saveToStorage(){
-localStorage.setItem("schoolBellData",JSON.stringify(schedules));
-}
-
-function loadFromStorage(){
-let data=localStorage.getItem("schoolBellData");
-if(data){
-schedules=JSON.parse(data);
-renderTable();
-}
-}
-
-function exportJSON(){
-let dataStr="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(schedules,null,2));
-let dl=document.createElement("a");
-dl.setAttribute("href",dataStr);
-dl.setAttribute("download","school_bell_schedule.json");
-dl.click();
-}
-
-function daySelect(){
-return document.getElementById("day").value;
-}
-
 </script>
-
 </body>
 </html>
